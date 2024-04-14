@@ -21,29 +21,29 @@
 #SBATCH --ntasks-per-core=1
 #SBATCH --hint=nomultithread
 
-#SBATCH --gres=gpu:3
+#SBATCH --gres=gpu:2
 
 cd $SLURM_SUBMIT_DIR
 
 ####### The current slurm job file uses NVIDIA GPU MPS accelerator for fast LAMMPS runs;
 ####### set "-B 1:*:*" to maximize the efficiency for multi-GPUs in PCIe 3.0 systems
-####### (avoid bandwidth issue between 2 CPUs) as much as possible;
+####### (avoid bandwidth issue between 2 CPUs) as much as possible; (also for NVLink)
 ####### set "-B *:*:1", "--cpus-per-task=1", and "--hint=nomultithread" to match the
 ####### disabled hyperthreading.
 
-####### node03:    2*{cpu(16c)@2.1GHz} + 3*{gpu( 5cu)} (HT disabled);
+####### dellws:    2*{cpu(26c)@2.0GHz} + 2*{gpu(56cu)} (HT disabled);
 
 ####### As of 03/24, multiple nvidia-cuda-mps-server instances can finally work on
-####### different GPUs, which means one can submit & run 3 jobs with one gpu each job
+####### different GPUs, which means one can submit & run 2 jobs with one gpu each job
 ####### at the same time. Thanks to the updated RHEL 9, Linux kernel 5.14, CUDA 12.3
 ####### ("On a Single-User System" in https://docs.nvidia.com/deploy/mps/index.html),
 ####### and slurm 23.02.07 packages.
 
-####### If run single urgent case, use 1*12 MPI (~75% CPU) + 3 GPU for the job will
+####### If run single urgent case, use 1*12 MPI (~46% CPU) + 2 GPU for the job will
 ####### be the best for efficiency (Ref: 100%); <the current one>
-####### If run series normal cases, use 1*8 MPI (~50% CPU) + 1 GPU for each job will
-####### be the best for efficiency (Ref:  40%);
-####### Hence, you will get 3*0.4x = 1.2x times the acceleration for 2 cases using 1
+####### If run series normal cases, use 1*12 MPI (~46% CPU) + 1 GPU for each job will
+####### be the best for efficiency (Ref:  70%);
+####### Hence, you will get 2*0.7x = 1.4x times the acceleration for 2 cases using 1
 ####### GPU each rather than run them one by one using 2 GPUs.
 
 ####### Change the email address in "--mail-user" entry if need notifications.
@@ -58,7 +58,7 @@ export CUDA_MPS_LOG_DIRECTORY=$SLURM_SUBMIT_DIR/nvidia-log.$SLURM_JOB_ID
 nvidia-cuda-mps-control -d
 sleep 1
 
-mpiexec --bind-to core --map-by core -n 12 lmp_mpi -sf gpu -pk gpu 3 neigh yes newton on pair/only off split 1.0 -i input.lmps
+mpiexec --bind-to core --map-by core -n 12 lmp_mpi -sf gpu -pk gpu 2 neigh yes newton on pair/only off split 1.0 -i input.lmps
 
 sleep 1
 echo quit | nvidia-cuda-mps-control
