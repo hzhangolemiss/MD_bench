@@ -27,7 +27,7 @@ cd $SLURM_SUBMIT_DIR
 
 ####### The current slurm job file uses only CPU for LAMMPS runs;
 ####### set "-B 1:*:*" to maximize the efficiency for multi-GPUs in PCIe 3.0 systems
-####### (avoid bandwidth issue between 2 CPUs) as much as possible; (also for NVLink)
+####### (avoid bandwidth issue between 2 CPUs) as much as possible;
 ####### set "-B *:*:1", "--cpus-per-task=1", and "--hint=nomultithread" to match the
 ####### disabled hyperthreading.
 
@@ -46,21 +46,23 @@ cd $SLURM_SUBMIT_DIR
 ####### Hence, you will get 3*0.4x = 1.2x times the acceleration for 2 cases using 1
 ####### GPU each rather than run them one by one using 2 GPUs.
 
-#export CUDA_MPS_PIPE_DIRECTORY=$SLURM_SUBMIT_DIR/nvidia-mps.$SLURM_JOB_ID
-#export CUDA_MPS_LOG_DIRECTORY=$SLURM_SUBMIT_DIR/nvidia-log.$SLURM_JOB_ID
-#nvidia-cuda-mps-control -d
-#sleep 1
+####### Change the email address in "--mail-user" entry if need notifications.
 
 module load openmpi/5.0.2
 module load openblas/0.3.26
 module load fftw3fp32/3.3.10
 module load lammps/gcc/fftw3fp32/openmpi/cudafp32/2Aug23.3
 
-mpiexec --bind-to core --map-by core -n 32 lmp_mpi -i input.lmps
+#export CUDA_MPS_PIPE_DIRECTORY=$SLURM_SUBMIT_DIR/nvidia-mps.$SLURM_JOB_ID
+#export CUDA_MPS_LOG_DIRECTORY=$SLURM_SUBMIT_DIR/nvidia-log.$SLURM_JOB_ID
+#nvidia-cuda-mps-control -d
+#sleep 1
 
-module purge
+mpiexec --bind-to core --map-by core -n 32 lmp_mpi -i input.lmps
 
 #sleep 1
 #echo quit | nvidia-cuda-mps-control
 #sleep 1
 #rm -r $SLURM_SUBMIT_DIR/nvidia-*
+
+module purge
