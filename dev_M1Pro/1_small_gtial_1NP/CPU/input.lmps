@@ -9,7 +9,7 @@ boundary                f f f
 atom_style              atomic
 comm_style              tiled  # brick
 
-processors              5 4 2
+processors              2 2 2
 
 # --------------------- FORCE FIELD
 
