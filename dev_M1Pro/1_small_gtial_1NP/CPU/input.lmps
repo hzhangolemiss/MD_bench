@@ -79,7 +79,7 @@ fix                     proc_1_3 all balance 1000 1.05 rcb
 
 #restart                 ${restart_step} restart.EQ.1K.*
 
-run                     50000 # 50000 (step) * 0.002 (ps/step) = 100 (ps)
+run                     5000 # 5000 (step) * 0.002 (ps/step) = 10 (ps)
 #write_data              data.EQ.1K.*
 
 #undump                  dump_eq_1K
