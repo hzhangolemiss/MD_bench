@@ -1,5 +1,6 @@
 #!/bin/bash
 
+####### For Server/WorkStation Grade machines
 ####### Refer to: https://slurm.schedmd.com/mc_support.html
 
 #SBATCH --job-name=xxx
@@ -39,9 +40,9 @@ cd $SLURM_SUBMIT_DIR
 ####### ("On a Single-User System" in https://docs.nvidia.com/deploy/mps/index.html),
 ####### and slurm 23.02.07 packages.
 
-####### If run single urgent case, use 1*12 MPI (~75% CPU) + 3 GPU for the job will
+####### If run single urgent case, use 1*12 MPI (~75% per CPU) + 3 GPU for the job will
 ####### be the best for efficiency (Ref: 100%); <the current one>
-####### If run series normal cases, use 1*8 MPI (~50% CPU) + 1 GPU for each job will
+####### If run series normal cases, use 1*8 MPI (~50% per CPU) + 1 GPU for each job will
 ####### be the best for efficiency (Ref:  40%);
 ####### Hence, you will get 3*0.4x = 1.2x times the acceleration for 2 cases using 1
 ####### GPU each rather than run them one by one using 2 GPUs.
@@ -58,7 +59,7 @@ export CUDA_MPS_LOG_DIRECTORY=$SLURM_SUBMIT_DIR/nvidia-log.$SLURM_JOB_ID
 nvidia-cuda-mps-control -d
 sleep 1
 
-mpiexec --bind-to core --map-by core -n 12 lmp_mpi -sf gpu -pk gpu 3 neigh yes newton on pair/only off split 1.0 -i input.lmps
+mpiexec --map-by core --bind-to core --report-bindings -n 12 lmp_mpi -sf gpu -pk gpu 3 neigh yes newton on pair/only off split 1.0 -i input.lmps
 
 sleep 1
 echo quit | nvidia-cuda-mps-control

@@ -12,27 +12,27 @@
 #SBATCH --nodes=1
 
 ####### -B socket[:core[:thread]]
-#SBATCH -B 1:8:1
+#SBATCH -B 1:16:1
 
 #SBATCH --mem-per-cpu=500M
 
 #SBATCH --cpus-per-task=1
-#SBATCH --ntasks-per-node=8
-#SBATCH --ntasks-per-socket=8
+#SBATCH --ntasks-per-node=16
+#SBATCH --ntasks-per-socket=16
 #SBATCH --ntasks-per-core=1
 #SBATCH --hint=nomultithread
 
-##SBATCH --gres=gpu:1
+##SBATCH --gres=gpu:2
 
 cd $SLURM_SUBMIT_DIR
 
 ####### The current slurm job file uses only CPU for LAMMPS runs;
 #######
 #######
-####### set "-B *:*:1", "--cpus-per-task=1", and "--hint=nomultithread" to temporarily
-####### disable hyperthreading.
+####### set "-B *:*:1", "--cpus-per-task=1", and "--hint=nomultithread" to match the
+####### disabled hyperthreading.
 
-####### dell5760:  1*{cpu(8c/16t)@2.6GHz} + 1*{gpu(32cu)};
+####### zen4pc:    1*{cpu(16c)@4.5GHz} + ?*{gpu(??cu)} (HT disabled);
 
 ####### As of 03/24, slurm has been updated to 23.02.07 version.
 #######
@@ -40,7 +40,7 @@ cd $SLURM_SUBMIT_DIR
 #######
 #######
 
-####### Use 1*8 MPI (100% CPU) for the job will
+####### Use 1*16 MPI (100% CPU) for the job will
 ####### be the best for efficiency (Ref: 100%); <the current one>
 #######
 #######
@@ -49,21 +49,21 @@ cd $SLURM_SUBMIT_DIR
 
 ####### Change the email address in "--mail-user" entry if need notifications.
 
-
-
-
-
+module load openmpi
+module load openblas
+module load fftw3
+module load lammps/gcc/sfft/openmpi/cuda/2Aug23.3
 
 #export CUDA_MPS_PIPE_DIRECTORY=$SLURM_SUBMIT_DIR/nvidia-mps.$SLURM_JOB_ID
 #export CUDA_MPS_LOG_DIRECTORY=$SLURM_SUBMIT_DIR/nvidia-log.$SLURM_JOB_ID
 #nvidia-cuda-mps-control -d
 #sleep 1
 
-mpiexec --map-by core --bind-to core --report-bindings -n 8 lmp_2Aug2023_update3_more_gcc_sfft_openmpi_cuda_mps -i input.lmps
+mpiexec --map-by core --bind-to core --report-bindings -n 16 lmp_mpi -i input.lmps
 
 #sleep 1
 #echo quit | nvidia-cuda-mps-control
 #sleep 1
 #rm -r $SLURM_SUBMIT_DIR/nvidia-*
 
-
+module purge

@@ -29,10 +29,10 @@ cd $SLURM_SUBMIT_DIR
 ####### The current slurm job file uses NVIDIA GPU MPS accelerator for fast LAMMPS runs;
 #######
 #######
-####### set "-B *:*:1", "--cpus-per-task=1", and "--hint=nomultithread" to temporarily
-####### disable hyperthreading.
+####### set "-B *:*:1", "--cpus-per-task=1", and "--hint=nomultithread" to match the
+####### disabled hyperthreading.
 
-####### dell5760:  1*{cpu(8c/16t)@2.6GHz} + 1*{gpu(32cu)};
+####### legion:    1*{cpu(16c)@2.5GHz} + 1*{gpu(76cu)} (HT disabled);
 
 ####### As of 03/24, slurm has been updated to 23.02.07 version.
 #######
@@ -40,7 +40,7 @@ cd $SLURM_SUBMIT_DIR
 #######
 #######
 
-####### Use 1*8 MPI (100% CPU) + 1 GPU for the job will
+####### Use 1*8~12 MPI (50%~75% CPU) + 1 GPU for the job will
 ####### be the best for efficiency (Ref: 100%); <the current one>
 #######
 #######
@@ -49,21 +49,21 @@ cd $SLURM_SUBMIT_DIR
 
 ####### Change the email address in "--mail-user" entry if need notifications.
 
-
-
-
-
+module load openmpi
+module load openblas
+module load fftw3
+module load lammps/gcc/sfft/openmpi/cuda/2Aug23.3
 
 export CUDA_MPS_PIPE_DIRECTORY=$SLURM_SUBMIT_DIR/nvidia-mps.$SLURM_JOB_ID
 export CUDA_MPS_LOG_DIRECTORY=$SLURM_SUBMIT_DIR/nvidia-log.$SLURM_JOB_ID
 nvidia-cuda-mps-control -d
 sleep 1
 
-mpiexec --map-by core --bind-to core --report-bindings -n 8 lmp_2Aug2023_update3_more_gcc_sfft_openmpi_cuda_mps -sf gpu -pk gpu 1 neigh yes newton on pair/only off split 1.0 -i input.lmps
+mpiexec --map-by core --bind-to core --report-bindings -n 8 lmp_mpi -sf gpu -pk gpu 1 neigh yes newton on pair/only off split 1.0 -i input.lmps
 
 sleep 1
 echo quit | nvidia-cuda-mps-control
 sleep 1
 rm -r $SLURM_SUBMIT_DIR/nvidia-*
 
-
+module purge

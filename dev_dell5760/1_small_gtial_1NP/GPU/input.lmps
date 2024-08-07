@@ -1,0 +1,125 @@
+# Input file for gTiAl oriented X=[100] Y=[010] Z=[001], eq.
+
+# --------------------- INITIALIZATION
+
+clear
+units                   metal
+dimension               3
+boundary                f f f
+atom_style              atomic
+comm_style              tiled  # brick
+
+processors              2 2 2
+
+# --------------------- FORCE FIELD
+
+pair_style              eam/alloy
+
+# --------------------- DATA FILE
+
+read_data               ../../../model_data/1_small_gtial_1NP/gTiAl_alloy_fct_sphere_r50_ori_minimized.lmp
+
+pair_coeff              * * ../../../model_data/1_small_gtial_1NP/AlTi.eam.alloy Al Ti
+
+neighbor                2.0 bin
+neigh_modify            every 1 delay 5 check yes
+
+# --------------------- SETTINGS, SIMULATION & OUTPUT
+
+variable                dt equal 0.002
+
+variable                T_damp equal 100*dt
+variable                P_damp equal 1000*dt
+
+variable                thermo_step equal 100
+#variable                print_step equal 10000
+#variable                restart_step equal 25000
+
+group                   all type 1 2
+group                   al type 1
+group                   ti type 2
+
+compute                 csym all centro/atom fcc
+
+compute                 msdall all msd
+compute                 msdal al msd
+compute                 msdti ti msd
+
+compute                 gyall all gyration
+compute                 gyal al gyration
+compute                 gyti ti gyration
+
+compute                 ke all ke/atom
+compute                 pe all pe/atom
+
+timestep                ${dt}
+
+thermo                  ${thermo_step}
+thermo_style            custom step temp ke pe etotal lx ly lz press &
+                        c_msdall[1] c_msdall[2] c_msdall[3] c_msdall[4] &
+                        c_msdal[1] c_msdal[2] c_msdal[3] c_msdal[4] &
+                        c_msdti[1] c_msdti[2] c_msdti[3] c_msdti[4] &
+                        c_gyall[1] c_gyall[2] c_gyall[3] c_gyall[4] c_gyall[5] c_gyall[6] &
+                        c_gyal[1] c_gyal[2] c_gyal[3] c_gyal[4] c_gyal[5] c_gyal[6] &
+                        c_gyti[1] c_gyti[2] c_gyti[3] c_gyti[4] c_gyti[5] c_gyti[6] &
+                        cpuremain
+thermo_modify           lost warn flush yes
+
+reset_timestep          0
+velocity                all create 1.0 12345 dist gaussian sum no mom yes rot yes units box
+run                     0
+velocity                all scale 1.0
+
+reset_timestep          0
+#dump                    dump_eq_1K all custom 1000 dump.EQ.1K.* id type xu yu zu c_ke c_pe c_csym
+
+fix                     proc_1_1 all nvt temp 1.0 1.0 ${T_damp}
+fix                     proc_1_2 all recenter INIT INIT INIT
+fix                     proc_1_3 all balance 1000 1.05 rcb
+
+#restart                 ${restart_step} restart.EQ.1K.*
+
+run                     50000 # 50000 (step) * 0.002 (ps/step) = 100 (ps)
+#write_data              data.EQ.1K.*
+
+#undump                  dump_eq_1K
+unfix                   proc_1_1
+unfix                   proc_1_2
+unfix                   proc_1_3
+
+#reset_timestep          0
+#dump                    dump_ht_298K all custom 1000 dump.HT.298K.* id type xu yu zu c_ke c_pe c_csym
+
+#fix                     proc_2_1 all nvt temp 1.0 298.0 ${T_damp}
+#fix                     proc_2_2 all recenter INIT INIT INIT
+#fix                     proc_2_3 all balance 1000 1.05 rcb
+
+#restart                 ${restart_step} restart.HT.298K.*
+
+#run                     297000 # 297 (K) / 0.5 (K/ps) * 0.002 (ps/step) = 297000 (step).
+                               # 297 (K) / 0.5 (K/ps) = 594 (ps).
+					           # 297 (K) / 297000 (step) = 1 (K) / 1000 (step);
+                               # ==> dT = 1 (K) per dump at every 1000 step.
+#write_data              data.HT.298K.*
+
+#undump                  dump_ht_298K
+#unfix                   proc_2_1
+#unfix                   proc_2_2
+#unfix                   proc_2_3
+
+#reset_timestep          0
+#dump                    dump_eq_298K all custom 1000 dump.EQ.298K.* id type xu yu zu c_ke c_pe c_csym
+
+#fix                     proc_3_1 all nvt temp 298.0 298.0 ${T_damp}
+#fix                     proc_3_2 all recenter INIT INIT INIT
+#fix                     proc_3_3 all balance 1000 1.05 rcb
+
+#restart                 ${restart_step} restart.EQ.298K.*
+
+#run                     50000 # 50000 (step) * 0.002 (ps/step) = 100 (ps)
+#write_data              testdata.EQ.298K.*
+
+#undump                  dump_eq_298K
+#unfix                   proc_3_1
+#unfix                   proc_3_2
+#unfix                   proc_3_3

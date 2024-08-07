@@ -1,5 +1,6 @@
 #!/bin/bash
 
+####### For Server/WorkStation Grade machines
 ####### Refer to: https://slurm.schedmd.com/mc_support.html
 
 #SBATCH --job-name=xxx
@@ -26,25 +27,25 @@
 cd $SLURM_SUBMIT_DIR
 
 ####### The current slurm job file uses only CPU for LAMMPS runs;
-####### set "-B 1:*:*" to maximize the efficiency for multi-GPUs in PCIe 3.0 systems
-####### (avoid bandwidth issue between 2 CPUs) as much as possible;
+#######
+#######
 ####### set "-B *:*:1", "--cpus-per-task=1", and "--hint=nomultithread" to match the
 ####### disabled hyperthreading.
 
-####### node01/04: 2*{cpu(20c)@2.4GHz} + 2*{gpu(48cu)} (HT disabled).
+####### node01/04: 2*{cpu(20c)@2.4GHz} + 2*{gpu(48cu)} (HT disabled);
 
-####### As of 03/24, multiple nvidia-cuda-mps-server instances can finally work on
-####### different GPUs, which means one can submit & run 2 jobs with one gpu each job
-####### at the same time. Thanks to the updated RHEL 9, Linux kernel 5.14, CUDA 12.3
-####### ("On a Single-User System" in https://docs.nvidia.com/deploy/mps/index.html),
-####### and slurm 23.02.07 packages.
+####### As of 03/24, slurm has been updated to 23.02.07 version.
+#######
+#######
+#######
+#######
 
-####### If run single urgent case, use 1*12 MPI (~60% CPU) + 2 GPU for the job will
-####### be the best for efficiency (Ref: 100%);
-####### If run series normal cases, use 1*12 MPI (~60% CPU) + 1 GPU for each job will
-####### be the best for efficiency (Ref:  70%);
-####### Hence, you will get 2*0.7x = 1.4x times the acceleration for 2 cases using 1
-####### GPU each rather than run them one by one using 2 GPUs.
+####### Use 2*20 MPI (100% CPU) for the job will
+####### be the best for efficiency (Ref: 100%); <the current one>
+#######
+#######
+#######
+#######
 
 ####### Change the email address in "--mail-user" entry if need notifications.
 
@@ -58,7 +59,7 @@ module load lammps/gcc/sfft/openmpi/cuda/2Aug23.3
 #nvidia-cuda-mps-control -d
 #sleep 1
 
-mpiexec --bind-to core --map-by core -n 40 lmp_mpi -i input.lmps
+mpiexec --map-by core --bind-to core --report-bindings -n 40 lmp_mpi -i input.lmps
 
 #sleep 1
 #echo quit | nvidia-cuda-mps-control
