@@ -3,7 +3,7 @@
 
 # Ignore executables
 #*.exe
-#*.out
+*.out
 
 # Ignore log files
 #*.log
