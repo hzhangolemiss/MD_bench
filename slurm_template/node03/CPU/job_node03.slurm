@@ -49,10 +49,10 @@ cd $SLURM_SUBMIT_DIR
 
 ####### Change the email address in "--mail-user" entry if need notifications.
 
-module load openmpi
 module load openblas
-module load fftw3
-module load lammps/gcc/sfft/openmpi/cuda/2Aug23.3
+module load openmpi
+module load fftw
+module load lammps/gcc/sfft/openmpi/cuda/29Aug24.0
 
 #export CUDA_MPS_PIPE_DIRECTORY=$SLURM_SUBMIT_DIR/nvidia-mps.$SLURM_JOB_ID
 #export CUDA_MPS_LOG_DIRECTORY=$SLURM_SUBMIT_DIR/nvidia-log.$SLURM_JOB_ID

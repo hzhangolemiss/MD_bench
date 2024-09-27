@@ -1,3 +1,3 @@
 #!/bin/zsh
 
-mpiexec -n 8 lmp_sfft_mpi -i input.lmps
+mpiexec -n 8 lmp_mpi -i input.lmps

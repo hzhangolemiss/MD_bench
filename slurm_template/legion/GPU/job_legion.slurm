@@ -49,16 +49,16 @@ cd $SLURM_SUBMIT_DIR
 
 ####### Change the email address in "--mail-user" entry if need notifications.
 
-module load openmpi
 module load openblas
-module load fftw3
-module load lammps/gcc/sfft/openmpi/cuda/2Aug23.3
+module load openmpi
+module load fftw
+module load lammps/gcc/sfft/openmpi/cuda/29Aug24.0
 
 export CUDA_MPS_PIPE_DIRECTORY=$SLURM_SUBMIT_DIR/nvidia-mps.$SLURM_JOB_ID
 export CUDA_MPS_LOG_DIRECTORY=$SLURM_SUBMIT_DIR/nvidia-log.$SLURM_JOB_ID
 nvidia-cuda-mps-control -d
 sleep 1
-
+# mpiexec --map-by pe-list=8,9,10,11,12,13,14,15:ordered --bind-to core --report-bindings lmp_mpi
 mpiexec --map-by core --bind-to core --report-bindings -n 8 lmp_mpi -sf gpu -pk gpu 1 neigh yes newton on pair/only off split 1.0 -i input.lmps
 
 sleep 1
